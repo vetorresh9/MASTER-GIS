@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Ejercicio ArcGIS – Terremotos</title>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+  <script src="https://js.arcgis.com/4.27/"></script>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/FeatureLayer"
+    ], function (Map, MapView, FeatureLayer) {
+
+      const map = new Map({
+        basemap: "streets-vector"   // 
+      });
+
+      const view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [0, 20],
+        zoom: 2
+      });
+
+      const earthquakesLayer = new FeatureLayer({
+        url: "https://services.arcgis.com/ue9rwul0eLj8y/ArcGIS/rest/services/Strong_Earthquakes_2012_2014/FeatureServer/0",
+        outFields: ["*"]
+      });
+
+      map.add(earthquakesLayer);
+
+      earthquakesLayer.when(function () {
+        earthquakesLayer.renderer = {
+          type: "simple",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: [255, 0, 0], 
+            size: 12,
+            outline: {
+              color: [0, 0, 0],
+              width: 0.5
+            }
+          }
+        };
+      });
+
+    });
+  </script>
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>

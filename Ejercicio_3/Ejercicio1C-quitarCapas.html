@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Quitando capas del mapa</title>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.27/"></script>
+
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+<script>
+
+  var map;
+  var featureLayer;
+
+  require([
+    "esri/Map",
+    "esri/views/MapView",
+    "esri/layers/FeatureLayer"
+  ], function (Map, MapView, FeatureLayer) {
+
+    map = new Map({
+      basemap: "topo-vector"
+    });
+
+    var view = new MapView({
+      container: "viewDiv",
+      map: map,
+      center: [0, 20],
+      zoom: 2
+    });
+
+    // ⭐ SERVICIO QUE FUNCIONA
+    featureLayer = new FeatureLayer({
+      url: "https://earthquake.usgs.gov/arcgis/rest/services/eq/map_server/0"
+    });
+
+    map.add(featureLayer);
+
+    console.log("Número de capas en el mapa:", map.layers.length);
+
+  });
+
+</script>
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>

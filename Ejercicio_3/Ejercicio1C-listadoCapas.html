@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Listado de capas</title>
+
+  <!-- ArcGIS CSS -->
+  <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.27/"></script>
+
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/FeatureLayer"
+    ], function(Map, MapView, FeatureLayer) {
+
+      // Crear mapa
+      var map = new Map({
+        basemap: "topo-vector"
+      });
+
+      // Crear vista
+      var view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [0, 20],
+        zoom: 2
+      });
+
+      // 🌋 Capa de terremotos (servicio actualizado que sí funciona)
+      var earthquakes = new FeatureLayer({
+        url: "https://earthquake.usgs.gov/arcgis/rest/services/eq/map_server/0"
+      });
+
+      // 🌎 Capa de países
+      var countries = new FeatureLayer({
+        url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Countries_(Generalized)/FeatureServer/0"
+      });
+
+      // Añadir ambas capas al mapa
+      map.addMany([countries, earthquakes]);
+
+      // ⭐ PASO 3: LISTAR CAPAS EN CONSOLA
+      map.layers.forEach(function(layer){
+        console.log("Título:", layer.title);
+        console.log("Tipo de capa:", layer.type);
+      });
+
+    });
+  </script>
+</body>
+</html>

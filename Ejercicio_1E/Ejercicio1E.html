@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReactiveUtils</title>
+
+<link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+<script src="https://js.arcgis.com/4.27/"></script>
+
+<style>
+html, body, #viewDiv {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+</style>
+
+<script>
+require([
+  "esri/Map",
+  "esri/views/MapView",
+  "esri/layers/FeatureLayer",
+  "esri/core/reactiveUtils"
+],
+function(Map, MapView, FeatureLayer, reactiveUtils) {
+
+  // 🗺️ MAPA
+  var map = new Map({
+    basemap: "topo-vector"
+  });
+
+  // 👁️ VISTA
+  var view = new MapView({
+    container: "viewDiv",
+    map: map,
+    center: [140,40],
+    zoom: 5
+  });
+
+  // 🌎 CAPA 1 – Países
+  var countries = new FeatureLayer({
+    url: "https://services.arcgis.com/P3ePLMYs2RVChJx/arcgis/rest/services/World_Countries_(Generalized)/FeatureServer/0"
+  });
+
+  // 🌋 CAPA 2 – Terremotos
+  var earthquakes = new FeatureLayer({
+    url: "http://services.arcgis.com/ue9rwulloeLEI9bj/arcgis/rest/services/Strong_Earthqueakes_20212_2014/FeatureServer/0"
+  });
+
+  // ➜ Añadimos SOLO la primera capa
+  map.add(earthquakes);
+
+  // ⭐ REACTIVE UTILS
+  reactiveUtils.on(
+  () => view,
+  "click",
+  () => {
+    map.add(countries);
+    console.log("Se añadió la capa de países 🌎");
+  }
+);
+
+});
+</script>
+</head>
+
+<body>
+<div id="viewDiv"></div>
+</body>
+</html>

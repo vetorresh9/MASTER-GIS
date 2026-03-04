@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+
+    <title>Prueba Final ArcGIS</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.27/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.27/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+      #limpiar {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 8px 12px;
+        background: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        z-index: 99;
+      }
+    </style>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/widgets/LayerList",
+        "esri/widgets/Sketch",
+        "esri/widgets/Search",
+        "esri/widgets/Legend",
+        "esri/widgets/BasemapToggle",
+        "esri/widgets/Home",
+        "esri/widgets/ScaleBar",
+        "esri/layers/GraphicsLayer",
+        "esri/geometry/geometryEngine",
+      ], function (
+        Map,
+        MapView,
+        FeatureLayer,
+        LayerList,
+        Sketch,
+        Search,
+        Legend,
+        BasemapToggle,
+        Home,
+        ScaleBar,
+        GraphicsLayer,
+        geometryEngine,
+      ) {
+        // MAPA
+
+        const map = new Map({
+          basemap: "topo-vector",
+        });
+
+        // VISTA
+
+        const view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-3.7, 40.4],
+          zoom: 6,
+        });
+
+        // POPUP RED NATURA
+
+        const popupRedNatura = {
+          title: "Zona protegida",
+          content: [
+            {
+              type: "fields",
+              fieldInfos: [
+                { fieldName: "TIPO_NUEVO", label: "Tipo de protección" },
+                { fieldName: "AC", label: "Comunidad Autónoma" },
+              ],
+            },
+          ],
+        };
+
+        // RENDERER RED NATURA
+
+        const redNaturaRenderer = {
+          type: "unique-value",
+          field: "TIPO_NUEVO",
+
+          uniqueValueInfos: [
+            {
+              value: "LIC",
+              symbol: {
+                type: "simple-fill",
+                color: [126, 200, 227, 0.6],
+                outline: { color: [90, 90, 90, 0.5], width: 0.6 },
+              },
+            },
+
+            {
+              value: "ZEPA",
+              symbol: {
+                type: "simple-fill",
+                color: [255, 159, 67, 0.6],
+                outline: { color: [90, 90, 90, 0.5], width: 0.6 },
+              },
+            },
+          ],
+        };
+
+        // CAPA RED NATURA
+
+        const redNatura = new FeatureLayer({
+          url: "https://services1.arcgis.com/nCKYwcSONQTkPA4K/ArcGIS/rest/services/Red_Natura_2000/FeatureServer/0",
+
+          renderer: redNaturaRenderer,
+
+          opacity: 0.8,
+
+          popupTemplate: popupRedNatura,
+        });
+
+        // CAPA PLAYAS
+
+        const playas = new FeatureLayer({
+          url: "https://services1.arcgis.com/nCKYwcSONQTkPA4K/ArcGIS/rest/services/Playas_2015/FeatureServer/0",
+
+          effect: "bloom(1.2,0.3px,0.0)",
+
+          popupTemplate: {
+            title: "Playa",
+            content: "Nombre: {NOMBRE}",
+          },
+        });
+
+        // ICONO SUBMARINISMO
+
+        const simboloSubmarinismo = {
+          type: "picture-marker",
+
+          url: "https://cdn-icons-png.flaticon.com/512/3448/3448339.png",
+
+          width: "18px",
+          height: "18px",
+        };
+
+        // PLAYAS CON SUBMARINISMO
+
+        const playasSubmarinismo = new FeatureLayer({
+          url: "https://services1.arcgis.com/nCKYwcSONQTkPA4K/ArcGIS/rest/services/Playas_2015/FeatureServer/0",
+
+          definitionExpression: "Submarinismo = 'Sí'",
+
+          renderer: {
+            type: "simple",
+            symbol: simboloSubmarinismo,
+          },
+        });
+
+        // AÑADIR CAPAS
+
+        map.add(redNatura);
+        map.add(playas);
+        map.add(playasSubmarinismo);
+
+        // CAPA DIBUJO
+
+        const capaDibujo = new GraphicsLayer();
+        map.add(capaDibujo);
+
+        // SIMBOLO INTERSECCIÓN
+
+        const simboloSeleccion = {
+          type: "simple-fill",
+
+          color: [220, 53, 69, 0.85],
+
+          outline: {
+            color: [60, 0, 0],
+            width: 1,
+          },
+        };
+
+        // SKETCH
+
+        const sketch = new Sketch({
+          layer: capaDibujo,
+
+          view: view,
+
+          polygonSymbol: {
+            type: "simple-fill",
+            color: [80, 120, 160, 0.15],
+            outline: {
+              color: [60, 60, 60],
+              width: 2,
+            },
+          },
+        });
+
+        view.ui.add(sketch, "top-right");
+
+        // INTERSECCIÓN
+
+        sketch.on("create", function (event) {
+          if (event.state === "complete") {
+            const poligonoUsuario = event.graphic.geometry;
+
+            view.whenLayerView(redNatura).then(function (layerView) {
+              layerView.queryFeatures().then(function (result) {
+                let contador = 0;
+
+                result.features.forEach(function (feature) {
+                  if (
+                    geometryEngine.intersects(poligonoUsuario, feature.geometry)
+                  ) {
+                    contador++;
+
+                    feature.symbol = simboloSeleccion;
+
+                    capaDibujo.add(feature);
+                  }
+                });
+
+                alert("Zonas Red Natura intersectadas: " + contador);
+              });
+            });
+          }
+        });
+
+        // LAYERLIST
+
+        const layerList = new LayerList({ view: view });
+        view.ui.add(layerList, "bottom-left");
+
+        // SEARCH
+
+        const search = new Search({ view: view });
+        view.ui.add(search, "top-left");
+
+        // LEGEND
+
+        const legend = new Legend({ view: view });
+        view.ui.add(legend, "bottom-right");
+
+        // BASEMAP TOGGLE
+
+        const basemapToggle = new BasemapToggle({
+          view: view,
+          nextBasemap: "satellite",
+        });
+        view.ui.add(basemapToggle, "bottom-right");
+
+        // HOME
+
+        const home = new Home({ view: view });
+        view.ui.add(home, "top-left");
+
+        // SCALEBAR
+
+        const scaleBar = new ScaleBar({ view: view });
+        view.ui.add(scaleBar, "bottom-left");
+
+        // BOTÓN LIMPIAR
+
+        document
+          .getElementById("limpiar")
+          .addEventListener("click", function () {
+            capaDibujo.removeAll();
+          });
+      });
+    </script>
+  </head>
+
+  <body>
+    <button id="limpiar">Limpiar selección</button>
+
+    <div id="viewDiv"></div>
+  </body>
+</html>

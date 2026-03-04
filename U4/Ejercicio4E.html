@@ -1,0 +1,146 @@
+<!doctype html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Popups</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.27/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.27/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/core/reactiveUtils",
+      ], (Map, MapView, FeatureLayer, reactiveUtils) => {
+        let mapa = new Map({
+          basemap: "dark-gray-vector",
+        });
+
+        var viewRotateAction = {
+          title: "Rotar",
+          id: "rotate",
+          className: "esri-icon-rotate",
+        };
+
+        let plantillaPopup = {
+          title: "Zona de reserva de {SOName}",
+          content: [
+            {
+              type: "fields",
+              fieldInfos: [
+                {
+                  fieldName: "AC",
+                  label: "Comunidad Autónoma",
+                },
+                {
+                  fieldName: "TIPO_NUEVO",
+                  label: "Tipo de reserva",
+                },
+                {
+                  fieldName: "Shape_Area",
+                  label: "Hectáreas",
+                  format: {
+                    digitSeparator: true,
+                    places: 0,
+                  },
+                },
+              ],
+            },
+          ],
+          actions: [viewRotateAction],
+        };
+
+        /* PASO 5: CAPA CON RENDERER */
+
+        let capa = new FeatureLayer({
+          url: "https://services1.arcgis.com/nCKYwcSONQTkPA4K/arcgis/rest/services/Red_Natura_2000/FeatureServer",
+
+          renderer: {
+            type: "unique-value",
+            field: "TIPO_NUEVO",
+
+            defaultSymbol: {
+              type: "simple-fill",
+            },
+
+            uniqueValueInfos: [
+              {
+                value: "ZEPA",
+                symbol: {
+                  type: "simple-fill",
+                  color: [187, 255, 0, 1],
+                  style: "diagonal-cross",
+                },
+              },
+
+              {
+                value: "LIC",
+                symbol: {
+                  type: "simple-fill",
+                  color: [255, 102, 0, 0.7],
+                },
+              },
+            ],
+          },
+
+          popupTemplate: plantillaPopup,
+        });
+
+        let vista = new MapView({
+          container: "viewDiv",
+          map: mapa,
+          center: [-5.708424605, 35.3467664737],
+          zoom: 4,
+          popup: {
+            dockEnabled: true,
+            dockOptions: {
+              buttonEnabled: false,
+              breakpoint: false,
+              position: "bottom-left",
+            },
+          },
+        });
+
+        function rotateView() {
+          vista.goTo({
+            rotation: 45,
+          });
+        }
+
+        reactiveUtils.on(
+          () => vista.popup,
+          "trigger-action",
+          (event) => {
+            if (event.action.id === "rotate") {
+              rotateView();
+            }
+          },
+        );
+
+        mapa.add(capa);
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>

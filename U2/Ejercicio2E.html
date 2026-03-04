@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0">
+    <title>Capa Gráfica del Mapa</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.27/"></script>
+
+    <style>
+        html, body, #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <script>
+
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/Graphic",
+            "esri/layers/GraphicsLayer"
+        ], (Map, MapView, Graphic, GraphicsLayer) => {
+
+            // =========================
+            // 🔹 GEOMETRÍAS
+            // =========================
+
+            const point = {
+                type: "point",
+                longitude: -118.80657463861,
+                latitude: 34.0005930608889
+            };
+
+            const polyline = {
+                type: "polyline",
+                paths: [
+                    [-118.821527826096, 34.0139576938577],
+                    [-118.814893761649, 34.0080602407843],
+                    [-118.808878330345, 34.0016642996246]
+                ]
+            };
+
+            const polygon = {
+                type: "polygon",
+                rings: [
+                    [-118.818984489994, 34.0137559967283],
+                    [-118.806796597377, 34.0215816298725],
+                    [-118.791432890735, 34.0163883241613],
+                    [-118.79596686535, 34.008564864635],
+                    [-118.808558110679, 34.0035027131376],
+                    [-118.818984489994, 34.0137559967283]
+                ]
+            };
+
+            // =========================
+            // 🔹 SIMBOLOGÍAS
+            // =========================
+
+            const simpleMarkerSymbol = {
+                type: "simple-marker",
+                color: [226, 119, 40],
+                outline: {
+                    color: [255, 255, 255],
+                    width: 1
+                }
+            };
+
+            const simpleLineSymbol = {
+                type: "simple-line",
+                color: [226, 119, 40],
+                width: 2
+            };
+
+            const simpleFillSymbol = {
+                type: "simple-fill",
+                color: [227, 139, 79, 0.8],
+                outline: {
+                    color: [255, 255, 255],
+                    width: 1
+                }
+            };
+
+            // =========================
+            // 🔹 POPUP TEMPLATE
+            // =========================
+
+            const popupTemplate = {
+                title: "{name}",
+                content: "{description}"
+            };
+
+            // =========================
+            // 🔹 GRAPHICS
+            // =========================
+
+            const pointGraphic = new Graphic({
+                geometry: point,
+                symbol: simpleMarkerSymbol,
+                attributes: {
+                    name: "Punto de referencia",
+                    description: "Ubicación específica del punto."
+                },
+                popupTemplate: popupTemplate
+            });
+
+            const lineGraphic = new Graphic({
+                geometry: polyline,
+                symbol: simpleLineSymbol,
+                attributes: {
+                    name: "Ruta",
+                    description: "Trayectoria representada por una polilínea."
+                },
+                popupTemplate: popupTemplate
+            });
+
+            const polygonGraphic = new Graphic({
+                geometry: polygon,
+                symbol: simpleFillSymbol,
+                attributes: {
+                    name: "Zona de interés",
+                    description: "Área representada mediante un polígono."
+                },
+                popupTemplate: popupTemplate
+            });
+
+            // =========================
+            // 🔹 MAPA Y VISTA
+            // =========================
+
+            const map = new Map({
+                basemap: "topo-vector"
+            });
+
+            const view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [-118.80657463861, 34.0100],
+                zoom: 13
+            });
+
+            // =========================
+            // 🔹 CAPA GRÁFICA
+            // =========================
+
+            const graphicsLayer = new GraphicsLayer();
+
+            // Añadimos la capa al mapa
+            map.add(graphicsLayer);
+
+            // Añadimos los gráficos a la capa
+            graphicsLayer.add(pointGraphic);
+            graphicsLayer.add(lineGraphic);
+            graphicsLayer.add(polygonGraphic);
+
+        });
+
+    </script>
+
+</head>
+<body>
+    <div id="viewDiv"></div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Sketch widget personalizado</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.27/"></script>
+
+    <style>
+        html, body, #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <script>
+
+        require([
+            "esri/Map",
+            "esri/layers/GraphicsLayer",
+            "esri/views/MapView",
+            "esri/widgets/Sketch",
+            "esri/widgets/Sketch/SketchViewModel"
+        ], (Map, GraphicsLayer, MapView, Sketch, SketchViewModel) => {
+
+            const graphicsLayer = new GraphicsLayer();
+
+            const map = new Map({
+                basemap: "topo-vector",
+                layers: [graphicsLayer]
+            });
+
+            const view = new MapView({
+                container: "viewDiv",
+                map: map,
+                zoom: 5,
+                center: [90, 45]
+            });
+
+            const sketch = new Sketch({
+                view: view,
+                layer: graphicsLayer,
+                viewModel: new SketchViewModel({
+                    view: view,
+                    layer: graphicsLayer,
+
+                    polygonSymbol: {
+                        type: "simple-fill",
+                        style: "cross",
+                        color: "#EFC8B1",
+                        outline: {
+                            width: 3,
+                            style: "solid",
+                            color: "#514644"
+                        }
+                    },
+
+                    pointSymbol: {
+                        type: "simple-marker",
+                        style: "diamond",
+                        size: 6,
+                        color: [255, 255, 255],
+                        outline: {
+                            color: [50, 50, 50],
+                            width: 1
+                        }
+                    },
+
+                    polylineSymbol: {
+                        type: "simple-line",
+                        color: [255, 130, 130],
+                        width: 5
+                    }
+                })
+            });
+
+            view.ui.add(sketch, "top-right");
+
+        });
+
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+</body>
+
+</html>

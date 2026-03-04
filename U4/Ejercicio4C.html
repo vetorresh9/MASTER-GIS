@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Class breaks renderer</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.27/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.27/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/renderers/ClassBreaksRenderer",
+      ], function (Map, MapView, FeatureLayer, ClassBreaksRenderer) {
+        // 1️⃣ Crear el renderer
+        var districtsRenderer = new ClassBreaksRenderer({
+          field: "POP2010",
+        });
+
+        // 2️⃣ Agregar los cortes
+
+        districtsRenderer.addClassBreakInfo({
+          minValue: 0,
+          maxValue: 600000,
+          symbol: {
+            type: "simple-fill",
+            color: "#ffffb2",
+          },
+        });
+
+        districtsRenderer.addClassBreakInfo({
+          minValue: 600001,
+          maxValue: 650000,
+          symbol: {
+            type: "simple-fill",
+            color: "#fecc5c",
+          },
+        });
+
+        districtsRenderer.addClassBreakInfo({
+          minValue: 650001,
+          maxValue: 700000,
+          symbol: {
+            type: "simple-fill",
+            color: "#fd8d3c",
+          },
+        });
+
+        districtsRenderer.addClassBreakInfo({
+          minValue: 700001,
+          maxValue: 1000000,
+          symbol: {
+            type: "simple-fill",
+            color: "#e31a1c",
+          },
+        });
+
+        // 3️⃣ Crear la capa y aplicar el renderer
+
+        var districtsLayer = new FeatureLayer({
+          url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/CongressionalDistricts/FeatureServer/0",
+          renderer: districtsRenderer,
+        });
+
+        // 4️⃣ Crear mapa
+
+        var map = new Map({
+          basemap: "streets",
+          layers: [districtsLayer],
+        });
+
+        var view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-90.925, 39.741638],
+          zoom: 4,
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
